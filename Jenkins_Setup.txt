@@ -1,0 +1,130 @@
+Setup Jenkins Server:
+
+Version selected to install
+# 2.479.1 (works with java17)
+
+Go root user
+$ sudo su
+
+## Setup Centos repository URLs ##
+$ sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+$ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+$ yum update -y
+
+Optional
+$ yum install epel-release -y
+
+Download Jenkins repository and import key
+$ wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+$ rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+## GPG key for Jenkins-2.346.1 ## OLD KEY
+$ rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+
+# Add required dependencies for the jenkins package
+$ yum install fontconfig java-17-openjdk
+
+Install jenkins
+$ yum install jenkins-2.497.1 
+
+Load system services
+$ systemctl daemon-reload
+
+Start and check status
+$ systemctl start jenkins
+$ systemctl status jenkins
+
+Enable jenkins to start at server starts
+$ systemctl enable jenkins
+
+visit http://<server-ip>:8080
+
+and install git, maven and then setup in manage jenkins on dashboard.
+
+
+
+####  Troubleshooting jenkins  ####
+
+*Installed java with jenkins
+Java8u451 > after extracting java1.8.0.451
+Jenkins-2.346.1
+
+*Error on enabling/starting jenkins
+> The unit jenkins.service has entered the 'failed' state with result 'exit-code'.
+
+> jenkins.service: Start request repeated too quickly.
+> jenkins.service: Failed with result 'exit-code'.
+
+*Jenkins configuration file on Centos '/etc/sysconfig/jenkins'. (available with previous jenkins versions)
+
+*Try Jenkins run manually 
+$ sudo -u jenkins /usr/bin/java -jar /usr/lib/jenkins/jenkins.war
+> sudo -u jenkins <path_to_java> -jar <path_to_jenkins_war_file>
+
+After running above if getting below error
+> sudo: /usr/bin/java: command not found
+do,
+$ which java
+copy resulting output path for <path_to_java>
+
+Then the cmd as below
+$ sudo -u jenkins <path_to_java> -jar /usr/lib/jenkins/jenkins.war
+
+if error 
+> Error: Unable to access jarfile /usr/lib/jenkins/jenkins.war
+
+*Try to locate jenkins.war file
+$ sudo find / -name jenkins.war 2>/dev/null
+
+*substitute the above found jenkins.war location in cmd as
+$ sudo -u jenkins /opt/jdk1.8.0_451/bin/java -jar /usr/share/java/jenkins.war
+
+*If it works manually, fix the systemd service and Edit the Jenkins config file:
+$ vi /etc/sysconfig/jenkins
+Add below,
+JENKINS_JAVA_CMD="/opt/jdk1.8.0_451/bin/java"
+Save and Exit
+
+Then do
+
+$ systemctl daemon-reexec
+$ systemctl restart jenkins
+$ systemctl status jenkins
+
+If getting error 
+> Job for jenkins.service failed because the control process exited with error code.
+--
+then maybe 'ExecStart' is pointing to '/usr/bin/jenkins' but should be pointed towards '/opt/jdk1.8.0_451/bin/java -jar /usr/share/java/jenkins.war'
+
+Reason: Your systemd service file /usr/lib/systemd/system/jenkins.service is hardcoded to /usr/bin/jenkins, which either doesn't exist or is incorrect. That’s why it fails with status=1.
+--
+
+*We correct the systemd service file
+$ vi /usr/lib/systemd/system/jenkins.service
+Edit and replace ExecStart as
+ExecStart=/opt/jdk1.8.0_451/bin/java -jar /usr/share/java/jenkins.war
+
+In the end service file should have below fields:
+[Service]
+ExecStart=/opt/jdk1.8.0_451/bin/java -jar /usr/share/java/jenkins.war
+User=jenkins
+Restart=on-failure
+SuccessExitStatus=143
+Environment="JENKINS_HOME=/var/lib/jenkins"
+
+do 
+*$ systemctl start jenkins
+$ systemctl daemon-reexec
+$ systemctl restart jenkins
+
+Now, if this works then 
+Enable Jenkins on Boot
+*$ systemctl enable jenkins
+
+try restarting the system and try 
+*$ systemctl status jenkins
+
+*visit http://<server-ip>:8080
+
+install git and maven to setup jenkins

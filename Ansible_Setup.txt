@@ -1,0 +1,66 @@
+Host Server Setup:
+
+sudo su
+
+## Mirror Cmds Centos ##
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+yum install epel-release -y
+
+yum update -y
+
+#> yum install python3.9
+
+#> Check python
+python3 --version
+
+#> Update pip if already present
+yum pip3 install --upgrade pip
+
+# install ansible 
+$ pip3 install ansible
+
+#> Setup env variable path for ansible
+$ vi ~/.bashrc
+add,
+export PIP_HOME=/usr/local
+export PATH=$PATH:$PIP_HOME/bin
+then,
+$ source ~/.bashrc
+
+or,
+
+#> Install python3.11 and pip3 directly as
+$ yum install python3.11 python3.11-pip
+ no need to set env variables in this case
+
+Check installation
+pip3 --version
+
+Install ansible
+pip3 install ansible
+
+Check ansible installation
+ansible --version
+
+Access Way#1
+generate key under .ssh directory
+$ cd /root/.ssh
+$ ssh-keygen (do it with no passphrase)
+$ cat keyfilename
+copy the key content, 
+
+go to remote server and add it
+$ cd /root/.ssh
+$ vi authorized_keys
+paste the key and save
+
+Access as
+$ ssh <ip_of_remote_server>
+
+Access Way#2
+copy the content from a.pem file used to create remote server
+and save it on host server in a.pem file.
+
+Access as 
+$ ssh -i a.pem username@<ip_of_remote_server>

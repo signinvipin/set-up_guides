@@ -1,0 +1,128 @@
+##  Sonatype Nexus  ##
+
+*system requirement (minimum) - 4cpu, 8gb ram, 20gb storage
+
+*Launch EC2 instance with centos 8 (arm64) and above min. requirements
+
+*Work as non-root user
+
+No need to install Java as it is bundled with nexus already. Java 17 is the default version bundled with nexus.
+
+*Setup package repository urls -
+## Mirror Cmds Centos ##
+$ sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+$ sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+#Not mandatory to add epel-release
+$ sudo yum install epel-release -y
+
+Update
+$ sudo yum update -y
+
+Downloads page - 
+https://my.sonatype.com/
+https://help.sonatype.com/en/download.html
+
+*Download and extract 'nexus.tar.gz' archive file
+$ cd /opt
+$ mkdir nexus 
+$ cd nexus
+$ sudo wget https://download.sonatype.com/nexus/3/nexus-3.81.1-01-linux-aarch_64.tar.gz
+or
+$ sudo curl -L -O https://download.sonatype.com/nexus/3/nexus-3.81.1-01-linux-aarch_64.tar.gz
+$ file nexus-3.81.1-01-linux-aarch_64.tar.gz
+$ tar -xzf nexus-3.81.1-01-linux-aarch_64.tar.gz
+
+correct directory structure
+/opt/sonatype-work
+/opt/nexus/nexus-3.81.1-01
+
+
+
+*create a nexus user with sufficient access rights to run the service and and make nexus own the directories -
+#Create a non-root user
+$ sudo adduser nexus
+after this command our nexus user has a home directory and a valid shell.
+
+#Change ownership of Nexus directories to nexus:nexus as user:group
+$ sudo chown -R nexus:nexus /opt/nexus
+$ sudo chown -R nexus:nexus /opt/nexus/sonatype-work
+
+*#Edit or create file 'nexus.rc' or 'nexus'
+$ sudo vi /opt/nexus/nexus-3.81.1-01/bin/nexus or 
+sudo nano /opt/nexus/nexus-3.81.1-01/bin/nexus
+and add content,
+run_as_user="nexus"
+then save and exit
+This tells the Nexus startup script to drop privileges and run as the nexus user instead of root.
+
+*Create system service for nexus 
+# create nexus.service and
+$ sudo vi /etc/systemd/system/nexus.service
+
+and add below content as
+
+[Unit]
+Description=Nexus Repository Manager
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/opt/nexus/nexus-3.81.1-01/bin/nexus start
+ExecStop=/opt/nexus/nexus-3.81.1-01/bin/nexus stop
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+*Reload systemd to pick up the new service
+$ sudo systemctl daemon-reload
+
+*Start Nexus
+$ sudo systemctl start nexus
+
+*Check status
+$ sudo systemctl status nexus
+
+*Stop Nexus
+$ sudo systemctl stop nexus
+
+*Enable Nexus to start on boot
+$ sudo systemctl enable nexus
+
+
+*For production
+
+#Disable shell access for the nexus user
+$ sudo usermod -s /sbin/nologin nexus
+Verify as,
+$ getent passwd nexus
+will get results as,
+nexus:x:1002:1002::/home/nexus:/sbin/nologin
+
+#Lock the nexus user’s password, so nobody will be able to enter a password
+$ sudo passwd -l nexus
+Verify as,
+$ sudo passwd -S nexus
+will get result as, 'L'-locked
+nexus L <other info>
+
+| Scenario                  | Should you restrict `nexus` login? |
+| ------------------------- | ---------------------------------- |
+| Production server         | ✅ Yes — do it. Best practice.      |
+| Shared or internet-facing | ✅ Yes — always.                    |
+| Personal dev machine only | 🟡 Optional — but eventually yes.  |
+
+For production purpose, we can 
+> use name 'Package'/'Release'
+> change<version> 1.0.1 -snapshot <version> to this <version> 1.0.0 <version> in pom.xml
+> set maven goal in 'top-level invoke maven targets'to 'install clean deploy'
+> click buildnow after success it will upload to the package/release repository
+> next time we will change the version 1.0.0 t0 1.0.1 and do buildnow after success it will create new backup under repository.
+> If version is not changed and we do build, it will fail.
+
+
+
