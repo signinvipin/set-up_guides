@@ -7,7 +7,7 @@ https://www.elastic.co/docs/reference/logstash/installing-logstash#_yum
 
 > Elasticsearch 7.17.x is the latest available for Centos8
 > OpenJDK-11 is compatible with Elasticsearch 7.17.x
-> Kibana 7.17.x is compatible with Elasticsearch 7.17.x
+> Kibana 7.17.x is compatible with Elasticsearch 7.17.29
 > Logstash 7.17.x compatible with Elasticsearch 7.17.x
 > Check for compatibility - https://www.elastic.co/support/matrix#matrix_jvm
 
@@ -16,12 +16,21 @@ Hardware requirements -
 8gb ram, 4core cpu, 50 gb storage - test purpose
 
 ## Mirror Cmds Centos ##
-sudo su
-sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-yum install epel-release -y
+$ sudo su
+$ sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+$ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+$ yum install epel-release -y
 
-yum update -y
+$ yum update -y
+
+## Install openJdk-11
+$ mv jdk-11.tar.gz /opt
+set-up env
+$ vi ~/.bashrc
+add
+# Java
+export JAVA_HOME=/opt/jdk-11.0.19
+export PATH=$PATH:$JAVA_HOME/bin
 
 ## Elasticsearch setup
 
@@ -41,6 +50,11 @@ type=rpm-md
 For centos and red hat
 $ sudo yum install --enablerepo=elasticsearch elasticsearch
 
+------skip-------
+If repo is 'enabled=1', then we only execute below cmd and the elasticsearch will
+also update with all other repositories when we do 'yum update'
+$ sudo yum install elasticsearch
+
 For openSuSe ---
 $ sudo zypper modifyrepo --enable elasticsearch
 $ sudo zypper install elasticsearch
@@ -57,62 +71,73 @@ Edit 'elasticsearch.yaml' present at (maybe here) '/etc/elasticsearch/elasticsea
 $ cd /etc/elasticsearch
 $ vi elasticsearch.yaml/yml
 
-change/set values of keys as below and save changes
-network.host: 0.0.0.0 or network.host: localhost
-path.data: /elk/elasticsearch/data
+change/set values of keys as below and save changes (not needed if installing kibana)
+network.host: 0.0.0.0 
+http.port: 9200
+discovery.node: single-node 
 
 #Copy the terminal output from the install command to a local file. In particular, you’ll need the password for #the built-in elastic superuser account. The output also contains the commands to enable Elasticsearch to run #as a service (https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-with-#rpm#running-systemd).
+-----skip-----------
 
 > Start Elasticsearch automatically
-$ sudo /bin/systemctl daemon-reload
-$ sudo /bin/systemctl enable elasticsearch.service
+$ sudo systemctl daemon-reload
+$ sudo systemctl enable elasticsearch.service
 
 > Run Elasticsearch with systemd
 $ sudo systemctl start elasticsearch.service
+$ sudo systemctl status elasticsearch.service
+$ curl -XGET http://localhost:9200 (to )
 $ sudo systemctl stop elasticsearch.service
 $ sudo systemctl restart elasticsearch
 
 
-
-
-visit - https://localhost:9200
+visit - https://server-ip:9200
 
 
 ## kibana setup
 
-Install Kibana with RPM
+Install Kibana-7.17.29 with RPM
 
-> Add repository to centos and import key
-$ rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
-$ rpm https://artifacts.elastic.co/packages/7.17.x/yum
-(Example: rpm http://packages.elastic.co/kibana/6.1/apt stable main)
+> Install from the RPM repository
+create a file 'kibana.repo' at '/etc/yum.repos.d/'
+$ vi /etc/yum.repos.d/kibana.repo
+add
 
+[kibana-7.X]
+name=Kibana repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/9.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
 
 > Install kibana and update cache
 $ yum update -y (if needed)
 $ sudo yum install kibana
 
-> Set up the node for connectivity/accessability
+> (if needed) Set up the node for connectivity/accessability
 Edit 'kibana.yml' present at (maybe here) '/etc/kibana/kibana.yml'
+sudo nano /etc/kibana/kibana.yml
+or
 $ cd /etc/elasticsearch
 $ vi kibana.yml
 
-change/set values of keys as below and save changes
-server.host: localhost (we use this now)
+change/set values of keys as below and save changes - 
 server.host: 0.0.0.0 (for open accesses from anywhere)
 
 > Enable Kibana with systemd
-$ sudo /bin/systemctl daemon-reload
-$ sudo /bin/systemctl enable kibana.service
+$ systemctl daemon-reload
+$ systemctl enable kibana.service
 
 > Start/Stop kibana 
-$ sudo systemctl start kibana.service
-$ sudo systemctl stop kibana.service
+$ systemctl start kibana.service
+$ systemctl stop kibana.service
 
 > Check status kibana
-$ sudo systemctl status kibana
+$ systemctl status kibana
 
-visit - http://<host>:5601/
+visit - http://<ec2-server-ip>:5601/
 
 ## Logstash
 
@@ -123,6 +148,19 @@ $ sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
 > Add repository
 $ https://artifacts.elastic.co/packages/9.x/yum stable main
+ or 
+Create 'logstash.repo' file in '/etc/yum.repos.d/'
+$ vi /etc/yum.repos.d/logstash.repo
+add, (change the version number as if required)
+
+[logstash-9.x]
+name=Elastic repository for 9.x packages
+baseurl=https://artifacts.elastic.co/packages/9.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
 
 > Update cache
 $ yum update -y
