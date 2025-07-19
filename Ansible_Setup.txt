@@ -10,12 +10,13 @@ yum install epel-release -y
 yum update -y
 
 #> yum install python3.9
+or,
+#> Install python3.11 and pip3 directly as
+$ yum install python3.11 python3.11-pip
+ no need to set env variables in this case
 
-#> Check python
-python3 --version
-
-#> Update pip if already present
-yum pip3 install --upgrade pip
+Check installation
+pip3 --version
 
 # install ansible 
 $ pip3 install ansible
@@ -30,20 +31,10 @@ $ source ~/.bashrc
 
 or,
 
-#> Install python3.11 and pip3 directly as
-$ yum install python3.11 python3.11-pip
- no need to set env variables in this case
-
-Check installation
-pip3 --version
-
-Install ansible
-pip3 install ansible
-
 Check ansible installation
 ansible --version
 
-Access Way#1
+Access Server via SSH Way#1
 generate key under .ssh directory
 $ cd /root/.ssh
 $ ssh-keygen (do it with no passphrase)
@@ -58,9 +49,9 @@ paste the key and save
 Access as
 $ ssh <ip_of_remote_server>
 
-Access Way#2
+Access Server via SSH Way#2
 copy the content from a.pem file used to create remote server
 and save it on host server in a.pem file.
 
 Access as 
-$ ssh -i a.pem username@<ip_of_remote_server>
+$ ssh -i key.pem username@<ip_of_remote_server>
