@@ -8,7 +8,7 @@ https://www.elastic.co/docs/reference/logstash/installing-logstash#_yum
 > Elasticsearch 7.17.x is the latest available for Centos8
 > OpenJDK-11 is compatible with Elasticsearch 7.17.x
 > Kibana 7.17.x is compatible with Elasticsearch 7.17.29
-> Logstash 7.17.x compatible with Elasticsearch 7.17.x
+> Logstash 7.17.x compatible with Elasticsearch 7.17.29
 > Check for compatibility - https://www.elastic.co/support/matrix#matrix_jvm
 
 Hardware requirements -
@@ -139,6 +139,64 @@ $ systemctl status kibana
 
 visit - http://<ec2-server-ip>:5601/
 
+--
+Step 1: Add Elasticsearch Connection Settings
+
+- name: Set Elasticsearch host
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regex: '^elasticsearch.hosts:'
+    line: 'elasticsearch.hosts: ["http://localhost:9200"]'
+
+- name: Set Kibana to use a service account (optional)
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regex: '^elasticsearch.username:'
+    line: 'elasticsearch.username: "kibana_system"'
+
+- name: Set password for service account
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regex: '^elasticsearch.password:'
+    line: 'elasticsearch.password: "your_password_here"'
+
+Step 2: Enable Security (Optional but Recommended)
+
+- name: Enable SSL for Elasticsearch
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regex: '^elasticsearch.ssl.verificationMode:'
+    line: 'elasticsearch.ssl.verificationMode: full'
+
+- name: Specify CA cert for SSL verification
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regex: '^elasticsearch.ssl.certificateAuthorities:'
+    line: 'elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/ca.crt"]'
+#We must have the CA cert file (ca.crt) already in place for this to work.
+
+Add below before the daemon-reload task, and after the server.host config.
+
+    - name: Set Elasticsearch host
+      lineinfile:
+        path: /etc/kibana/kibana.yml
+        regex: '^elasticsearch.hosts:'
+        line: 'elasticsearch.hosts: ["http://localhost:9200"]'
+
+    - name: Set Elasticsearch username
+      lineinfile:
+        path: /etc/kibana/kibana.yml
+        regex: '^elasticsearch.username:'
+        line: 'elasticsearch.username: "kibana_system"'
+
+    - name: Set Elasticsearch password
+      lineinfile:
+        path: /etc/kibana/kibana.yml
+        regex: '^elasticsearch.password:'
+        line: 'elasticsearch.password: "your_password_here"'
+
+--
+
 ## Logstash
 
 Installing from Package Repositories
@@ -168,5 +226,59 @@ $ yum update -y
 > Install logstash
 $ sudo yum install logstash
 
+### Create configuration file
+# Add Logstash Configuration Deployment
+# If we're planning to manage the Logstash pipeline or config files, we may want to include tasks to:
+#    Create config directory if needed.
+#    Upload pipeline files via copy or template.
+#    Restart Logstash after pushing configs.
+
+# A custom Logstash configuration file defines how Logstash processes data. It tells Logstash:
+  Where to get data from → input
+  How to process/transform it → filter
+  Where to send it → output
+
+# Logstash config files go in: /etc/logstash/conf.d/
+# Add this file and restart logstash
+# /etc/logstash/conf.d/simple-pipeline.conf
+
+#input {
+#  beats {
+#    port => 5044
+#  }
+#}
+
+#filter {
+#  if [fileset][module] == "nginx" {
+#    grok {
+#      match => { "message" => "%{COMBINEDAPACHELOG}" }
+#    }
+#  }
+#}
+
+#output {
+#  elasticsearch {
+#    hosts => ["http://localhost:9200"]
+#    index => "logstash-%{+YYYY.MM.dd}"
+#  }
+#}
+
+# Add yml code
+# Add below when adding conf file for logstash 
+#    - name: Configure Beats configuration file
+#      template:
+#        src: logstash.conf
+#        dest: /etc/logstash/conf.d/logstash.conf
+#        owner: root
+#        group: root
+#        mode: '0644'
+
+> Load services
+$ sudo systemctl daemon-reload
+
 > Running Logstash by Using Systemd / start up Logstash
 $ sudo systemctl start logstash.service
+
+> enable logstash at startup
+$ sudo systemctl enable logstash.service
+
