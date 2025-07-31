@@ -24,8 +24,8 @@ $ pip3 install ansible
 #> Setup env variable path for ansible
 $ vi ~/.bashrc
 add,
-export PIP_HOME=/usr/local
-export PATH=$PATH:$PIP_HOME/bin
+export A_HOME=/usr/local
+export PATH=$PATH:$A_HOME/bin
 then,
 $ source ~/.bashrc
 
@@ -55,3 +55,38 @@ and save it on host server in a.pem file.
 
 Access as 
 $ ssh -i key.pem username@<ip_of_remote_server>
+
+After Setup How-Tos
+1. ansible-galaxy role delete <github_user> <github_repo>
+Purpose: Deletes a role from Ansible Galaxy, the online repository.
+Scope: Remote – This is an admin-level command used by the role owner (typically via API or web interface) to remove the role listing from the Galaxy website.
+Effect: Once deleted, others can't download this role using ansible-galaxy install.
+usage:
+$ ansible-galaxy role delete myusername myrole
+
+Note: You must be the owner of the GitHub repo or authorized user to do this.
+
+2. ansible-galaxy remove <role_name>
+Purpose: Removes a role from your local system, typically from ~/.ansible/roles/.
+Scope: Local – Affects your environment only.
+Effect: Deletes the installed role directory, freeing up space or cleaning up unused roles.
+usage:
+$ ansible-galaxy remove geerlingguy.apache
+
+Summary:
+| Command                             | Affects        | Scope  | Use Case                                  |
+| ----------------------------------- | -------------- | ------ | ----------------------------------------- |
+| `ansible-galaxy role delete`        | Galaxy website | Remote | Delete your own role from Galaxy          |
+| `ansible-galaxy remove <role_name>` | Local system   | Local  | Uninstall/remove a role from your machine |
+
+Placement of roles:
+Follow below structure. We can place project folder anywhere we want.
+my-ansible-project/
+├── playbook.yml
+├── roles/
+│   ├── common/
+│   └── webserver/
+
+Other than project folder ansible looks for roles under below locations:
+System-wide (for all users): /etc/ansible/roles/
+User-specific: ~/.ansible/roles/
