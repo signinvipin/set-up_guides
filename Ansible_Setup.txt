@@ -90,3 +90,33 @@ my-ansible-project/
 Other than project folder ansible looks for roles under below locations:
 System-wide (for all users): /etc/ansible/roles/
 User-specific: ~/.ansible/roles/
+
+
+📂 files/ Folder inside role
+Use the files/ directory when you want to copy static files to a target machine without modification.
+Use Cases:
+1> Copying configuration files that don’t need any variable substitution
+2> Deploying binary files, certificates, static assets, etc.
+
+- name: Copy static config file
+  ansible.builtin.copy:
+    src: myapp.conf
+    dest: /etc/myapp/myapp.conf
+
+This assumes 'roles/myrole/files/myapp.conf' exists in files directory of a role.
+
+📂 templates/ Folder
+Use the templates/ directory when you want to render a file using Jinja2 templates with Ansible variables.
+Use Cases:
+1> Creating configuration files that depend on host variables, facts, or custom logic
+2> Templates that change dynamically based on the environment or host
+
+- name: Deploy templated config
+  ansible.builtin.template:
+    src: myapp.conf.j2
+    dest: /etc/myapp/myapp.conf
+
+This assumes roles/myrole/templates/myapp.conf.j2 contains Jinja2 code like:
+[server]
+port = {{ app_port }}
+
