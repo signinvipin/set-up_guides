@@ -54,3 +54,5 @@ Delete all images, containers, and volumes:
 Images, containers, volumes, or custom configuration files on your host aren't automatically removed.
 $ sudo rm -rf /var/lib/docker
 sudo rm -rf /var/lib/containerd
+
+Workind with docker:
