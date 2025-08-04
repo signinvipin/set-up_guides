@@ -55,4 +55,23 @@ Images, containers, volumes, or custom configuration files on your host aren't a
 $ sudo rm -rf /var/lib/docker
 sudo rm -rf /var/lib/containerd
 
-Workind with docker:
+## Working with docker ##
+
+Check running containers 
+$ docker ps -a
+
+Check docker images present in repository
+$ docker images
+
+Pull an image from docker registry
+$ docker pull <image-name>
+
+Run the image and enter bash mode
+$ docker run -it <image-name> bash
+
+Removing image
+$ docker rmi <image-name> or <image-id>
+
+Removing container 
+$ docker rm <name> or <container-id>
+
