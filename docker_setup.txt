@@ -75,3 +75,7 @@ $ docker rmi <image-name> or <image-id>
 Removing container 
 $ docker rm <name> or <container-id>
 
+To remove all stopped containers at once:
+$ docker container prune
+
+
