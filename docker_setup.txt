@@ -78,4 +78,12 @@ $ docker rm <name> or <container-id>
 To remove all stopped containers at once:
 $ docker container prune
 
+Login to docker account CLI
+$ docker login -u <username>
+
+Tag image
+$ docker tag <image/image> <username>/<image/image>
+
+Push image to docker private repository
+$ docker push <username>/<image/image>
 
