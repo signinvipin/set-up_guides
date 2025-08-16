@@ -60,8 +60,11 @@ sudo rm -rf /var/lib/containerd
 
 ## Working with docker ##
 
-Check running containers 
+Check all containers (even not running)
 $ docker ps -a
+
+Lists only the currently running containers
+$ docker ps
 
 Check docker images present in repository
 $ docker images
@@ -72,11 +75,17 @@ $ docker pull <image-name>
 Run the image and enter bash mode
 $ docker run -it <image-name> bash
 
-Removing image
-$ docker rmi <image-name> or <image-id>
+To remove a image, we first
+Remove running container 
+$ docker rm <name>
+then,
+Remove that image
+$ docker rmi <image-name> or <image_id>
+can use image id if no other tag with that image is present
 
-Removing container 
-$ docker rm <name> or <container-id>
+To remove an image already pushed first 
+$ docker rmi <image>
+then goto Hub webpage select tag and click delete to remove the tag.
 
 To remove all stopped containers at once:
 $ docker container prune
@@ -84,9 +93,14 @@ $ docker container prune
 Login to docker account CLI
 $ docker login -u <username>
 
+Create a new repository then, tag and push image to it:
 Tag image
 $ docker tag <image/image> <username>/<image/image>
-
 Push image to docker private repository
 $ docker push <username>/<image/image>
 
+Tag and push image to existing docker repository
+$ docker tag alpine signinvipin/jenkins_repo:alpine (or latest as tag name) 
+where 'signinvipin/jenkins_repo' is the repo name and 
+'alpine' is the image name, then push it as
+$ docker push signinvipin/jenkins_repo:alpine
