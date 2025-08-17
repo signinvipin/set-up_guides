@@ -80,7 +80,9 @@ Remove running container
 $ docker rm <name>
 then,
 Remove that image
-$ docker rmi <image-name> or <image_id>
+$ docker rmi <image_id> or <image_name>:<tag_name>
+eg. docker rmi signinvipin/jenkins:lts-jdk17
+eg. docker rmi 6f0166f5e399
 can use image id if no other tag with that image is present
 
 To remove an image already pushed first 
@@ -95,12 +97,19 @@ $ docker login -u <username>
 
 Create a new repository then, tag and push image to it:
 Tag image
-$ docker tag <image/image> <username>/<image/image>
+$ docker tag <image_id or image_name> <username>/<image_repo_name/image_name>
+eg. docker tag 6f0166f5e399 signinvipin/jenkins:lts-jdk17
 Push image to docker private repository
-$ docker push <username>/<image/image>
+$ docker push <username>/<image_name>:<tag_name>
+eg. docker push signinvipin/jenkins:lts-jdk17 
 
 Tag and push image to existing docker repository
 $ docker tag alpine signinvipin/jenkins_repo:alpine (or latest as tag name) 
 where 'signinvipin/jenkins_repo' is the repo name and 
 'alpine' is the image name, then push it as
 $ docker push signinvipin/jenkins_repo:alpine
+
+Push is only possible to private repository 
+$ docker push <image_id or name> signinvipin/<image_name>:<tag_name> or <image_id> 
+not to public repository from where we pull the image as
+$ docker push jenkins/jenkins:tag signinvipin/jenkins/jenkins:tag

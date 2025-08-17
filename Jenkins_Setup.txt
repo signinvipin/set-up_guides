@@ -128,3 +128,7 @@ try restarting the system and try
 *visit http://<server-ip>:8080
 
 install git and maven to setup jenkins
+
+when logged in as admin without creating user, next time use username as "admin"
+and the password will be the string "b57965715ec5435db81125137dc4b5d4"  
+found at "/var/jenkins_home/secrets/initialAdminPassword"
