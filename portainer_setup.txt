@@ -1,0 +1,33 @@
+Install Portainer CE with Docker on Linux
+
+Portainer consists of two elements, 
+1> the Portainer Server, 
+2> and the Portainer Agent.
+Both run as lightweight Docker containers on a Docker engine.
+
+Here, We install the Portainer Server container on our Linux environment.
+
+Compatibility (latest) (x86_64)
+----------------------
+portainer - 2.27.9
+docker - 26.0.2 27.0.3
+kubernetes - 1.29 1.30 1.31
+podman - 5.2.3
+
+UI over port 9443
+TCP tunnel server over port 8000
+
+After setting-up compatible docker version,
+
+Download and install the Portainer Server container:
+$ sudo su 
+$ docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:2.27.9
+
+Log into your Portainer Server instance by opening a web browser and going to:
+https://<instance_ip>:9443
+
+***If security warning appears and says failed to pull settings and configuration,
+restart the portainer as,
+$ docker stop e909b1ec0d1a ('e909b1ec0d1a' is the portainer container_id)
+$ docker start e909b1ec0d1a
+go to browser and refresh the page, login window will appear
