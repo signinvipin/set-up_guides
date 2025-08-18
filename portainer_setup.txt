@@ -8,6 +8,7 @@ Both run as lightweight Docker containers on a Docker engine.
 Here, We install the Portainer Server container on our Linux environment.
 
 Compatibility (latest) (x86_64)
+as per https://docs.portainer.io/start/requirements-and-prerequisites
 ----------------------
 portainer - 2.27.9
 docker - 26.0.2 27.0.3
