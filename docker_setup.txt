@@ -92,7 +92,7 @@ then goto Hub webpage select tag and click delete to remove the tag.
 To remove all stopped containers at once:
 $ docker container prune
 
-Login to docker account CLI
+Login to docker account CLI (to push images to hub, need to login)
 $ docker login -u <username>
 
 Create a new repository then, tag and push image to it:
