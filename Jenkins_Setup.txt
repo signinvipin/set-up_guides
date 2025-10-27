@@ -15,8 +15,10 @@ Optional
 $ yum install epel-release -y
 
 Download Jenkins repository and import key
-$ wget -O /etc/yum.repos.d/jenkins.repo \
-    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+$ wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+or
+$ curl -o /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+
 $ rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 
 ## GPG key for Jenkins-2.346.1 ## OLD KEY
@@ -24,9 +26,19 @@ $ rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
 
 # Add required dependencies for the jenkins package
 $ yum install fontconfig java-17-openjdk
+##run this, it will install java as well
+
+Check Javac
+$ javac -version
+if javac not available
+$ sudo yum install java-17-openjdk-devel
+
+
+# If needed select java version
+$ sudo update-alternatives --config java
 
 Install jenkins
-$ yum install jenkins-2.497.1 
+$ yum install jenkins-2.479.1 
 
 Load system services
 $ systemctl daemon-reload
